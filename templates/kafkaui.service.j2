@@ -8,7 +8,7 @@ After=network.target
 Type=simple
 StandardOutput=null
 ExecStart=java -Dspring.config.additional-location=/etc/kafkaui/application-local.yml -jar {{ kafkaui_dir }}/kafkaui.jar
-ExecStop=sudo pkill -f 'kafkaui'
+ExecStop=pkill -f 'kafkaui'
 User={{ kafkaui_user }}
 Group={{ kafkaui_group }}
 Restart=on-failure
