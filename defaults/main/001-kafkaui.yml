@@ -1,0 +1,20 @@
+---
+# The Kafka-UI version to be downloaded and installed
+kafkaui_download_base_url: https://github.com/provectus/kafka-ui/releases/download/
+kafkaui_download_validate_certs: yes
+kafkaui_version: v0.4.0
+
+# The kafka-ui user and group to create files/dirs with and for running the kafka-ui service
+kafkaui_create_user_group: true
+kafkaui_user: kafkaui
+kafkaui_group: kafkaui
+
+kafkaui_root_dir: /opt
+kafkaui_dir: "{{ kafkaui_root_dir }}/kafkaui"
+
+# Start kafka-ui after installation
+kafkaui_start: yes
+# Restart kafka-ui on configuration change
+kafkaui_restart: yes
+
+kafkaui_port: 8080

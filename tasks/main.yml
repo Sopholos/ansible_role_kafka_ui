@@ -1,2 +1,134 @@
 ---
-# tasks file for ansible_role_kafka_ui
+- name: install | load OS-specific variables
+  include_vars: '{{ item }}'
+  with_first_found:
+    - ../vars/{{ ansible_os_family }}.yml
+    - ../vars/{{ ansible_distribution_release }}.yml
+    - ../vars/empty.yml
+  tags:
+    - always
+
+- name: install | create kafka-ui group
+  group:
+    name: '{{ kafkaui_group }}'
+    state: present
+    system: yes
+  when: kafkaui_create_user_group | bool
+  tags:
+    - kafkaui_group
+
+- name: install | create kafkaui user
+  user:
+    name: '{{ kafkaui_user }}'
+    group: '{{ kafkaui_group }}'
+    state: present
+    createhome: no
+    system: yes
+  when: kafkaui_create_user_group | bool
+  tags:
+    - kafkaui_user
+
+- name: install | dependencies
+  apt:
+    update_cache: yes
+    name:
+      - openjdk-19-jre
+
+- name: install | check if kafka-ui has already been downloaded
+  stat:
+    path: '{{ kafkaui_dir }}_{{ kafkaui_version }}/kafkaui.jar'
+  register: jarfile
+
+- name: install | create kafka-ui dir
+  file:
+    path: '{{ kafkaui_dir }}_{{ kafkaui_version }}/config'
+    state: directory
+    group: '{{ kafkaui_group }}'
+    owner: '{{ kafkaui_user }}'
+
+- name: install | download Apache kafka-ui
+  get_url:    
+    url: '{{ kafkaui_download_base_url }}/{{ kafkaui_version }}/kafka-ui-api-{{ kafkaui_version }}.jar'
+    dest: '{{ kafkaui_dir }}_{{ kafkaui_version }}/kafkaui.jar'
+    #validate_certs: '{{ kafka_download_validate_certs }}'
+  when: not jarfile.stat.exists
+  tags:
+    - kafkaui_download
+
+- name: install | create symlink to kafka-ui installation directory
+  file:
+    src: '{{ kafkaui_root_dir }}/kafkaui_{{ kafkaui_version }}'
+    dest: '{{ kafkaui_dir }}'
+    state: link
+    group: '{{ kafkaui_group }}'
+    owner: '{{ kafkaui_user }}'
+  tags:
+    - kafkaui_dirs
+
+- name: install | create directory for symlink to kafka-ui configuration files
+  file:
+    path: /etc/kafkaui
+    state: directory
+    group: '{{ kafkaui_group }}'
+    owner: '{{ kafkaui_user }}'
+    mode: 0755
+  tags:
+    - kafkaui_dirs
+
+- name: install | template configuration file to application-local.yml
+  template:
+    src: application-local.yml.j2
+    dest: '{{ kafkaui_dir }}/config/application-local.yml'
+    group: '{{ kafkaui_group }}'
+    owner: '{{ kafkaui_user }}'
+    mode: 0644
+  notify:
+    - Restart kafkaui service
+  tags:
+    - kafkaui_config
+
+- name: install | create symlink to kafka-ui server properties file
+  file:
+    src: '{{ kafkaui_dir }}/config/application-local.yml'
+    dest: /etc/kafkaui/application-local.yml
+    state: link
+    group: '{{ kafkaui_group }}'
+    owner: '{{ kafkaui_user }}'
+  tags:
+    - kafkaui_config
+
+# - name: Template kafka-ui init.d service file
+#   template:
+#     src: kafkaui.initd.j2
+#     dest: /etc/init.d/kafkaui
+#     group: '{{ kafkaui_group }}'
+#     owner: '{{ kafkaui_user }}'
+#     mode: 0644
+#   notify:
+#     - Reload initd
+#     - Restart kafkaui service
+#   when: ansible_os_family == "RedHat" and ansible_distribution_major_version == '6'
+#   tags:
+#     - kafkaui_service
+
+- name: install | template kafkaui systemd service
+  template:
+    src: kafkaui.service.j2
+    dest: '{{ kafkaui_unit_path }}'
+    group: '{{ kafkaui_group }}'
+    owner: '{{ kafkaui_user }}'
+    mode: 0644
+  notify:
+    - Restart kafkaui systemd
+  when: ansible_os_family == "RedHat" and ansible_distribution_major_version > '6' or ansible_os_family == "Debian"
+  tags:
+    - kafkaui_service
+
+- name: install | install and start the kafkaui service
+  service:
+    name: kafkaui
+    state: started
+    enabled: yes
+  when: kafkaui_start
+  tags:
+    - kafkaui_service

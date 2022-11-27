@@ -1,0 +1,2 @@
+---
+kafkaui_unit_path: /lib/systemd/system/kafkaui.service
