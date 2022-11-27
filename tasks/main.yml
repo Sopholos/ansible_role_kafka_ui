@@ -50,7 +50,6 @@
   get_url:    
     url: '{{ kafkaui_download_base_url }}/{{ kafkaui_version }}/kafka-ui-api-{{ kafkaui_version }}.jar'
     dest: '{{ kafkaui_dir }}_{{ kafkaui_version }}/kafkaui.jar'
-    #validate_certs: '{{ kafka_download_validate_certs }}'
   when: not jarfile.stat.exists
   tags:
     - kafkaui_download
@@ -97,19 +96,19 @@
   tags:
     - kafkaui_config
 
-# - name: Template kafka-ui init.d service file
-#   template:
-#     src: kafkaui.initd.j2
-#     dest: /etc/init.d/kafkaui
-#     group: '{{ kafkaui_group }}'
-#     owner: '{{ kafkaui_user }}'
-#     mode: 0644
-#   notify:
-#     - Reload initd
-#     - Restart kafkaui service
-#   when: ansible_os_family == "RedHat" and ansible_distribution_major_version == '6'
-#   tags:
-#     - kafkaui_service
+- name: install | template kafka-ui init.d service file
+  template:
+    src: kafkaui.initd.j2
+    dest: /etc/init.d/kafkaui
+    group: '{{ kafkaui_group }}'
+    owner: '{{ kafkaui_user }}'
+    mode: 0644
+  notify:
+    - Reload initd
+    - Restart kafkaui service
+  when: ansible_os_family == "RedHat" and ansible_distribution_major_version == '6'
+  tags:
+    - kafkaui_service
 
 - name: install | template kafkaui systemd service
   template:
