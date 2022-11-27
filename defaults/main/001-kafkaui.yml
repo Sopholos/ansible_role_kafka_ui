@@ -18,3 +18,32 @@ kafkaui_start: yes
 kafkaui_restart: yes
 
 kafkaui_port: 8080
+
+# if this is only one cluster, you could use that one config
+# comma-sparated list
+kafkaui_bootstrapServers: "localhost:9092"
+
+kafkaui_clusters:
+  - name: local
+    bootstrapServers: "{{ kafkaui_bootstrapServers }}"
+    # zookeeper: localhost:2181
+    # schemaRegistry: http://localhost:8085
+    # ksqldbServer: http://localhost:8088
+    # kafkaConnect:
+    #   - name: first
+    #     address: http://localhost:8083
+    metrics:
+      port: 9997
+      type: JMX
+    # read-only: true
+
+kafkaui_config:
+  kafka:
+    clusters: "{{ kafkaui_clusters }}"
+  spring:
+    jmx:
+      enabled: true
+  auth:
+    type: DISABLED
+  server:
+    port: "{{ kafkaui_port }}" # - Port in which kafka-ui will run.
