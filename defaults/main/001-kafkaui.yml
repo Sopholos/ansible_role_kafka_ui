@@ -23,6 +23,14 @@ kafkaui_port: 8080
 # comma-sparated list
 kafkaui_bootstrapServers: "localhost:9092"
 
+# basic auth
+# kafkaui_spring_security:
+#   user:
+#     name: admin
+#     password: password
+# kafkaui_auth:
+#     type: LOGIN_FORM
+
 kafkaui_clusters:
   - name: local
     bootstrapServers: "{{ kafkaui_bootstrapServers }}"
@@ -43,7 +51,7 @@ kafkaui_config:
   spring:
     jmx:
       enabled: true
-  auth:
-    type: DISABLED
+    security: "{{ kafkaui_spring_security | default('') }}"
+  auth: "{{ kafkaui_auth | default('DISABLED') }}"
   server:
     port: "{{ kafkaui_port }}" # - Port in which kafka-ui will run.
