@@ -1,4 +1,4 @@
-Ansible kakfka-ui role
+Ansible kafka-ui role
 =========
 An ansible role to install kafka-ui
 
