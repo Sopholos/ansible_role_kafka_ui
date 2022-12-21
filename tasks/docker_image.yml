@@ -19,10 +19,10 @@
     mode: 755
   register: kafkaui_config
 
-- name: install | deploy provectuslabs/kafka-ui:latest docker container
+- name: install | deploy provectuslabs/kafka-ui:master docker container
   docker_container:
     name: "{{ docker_container_name }}"
-    image: provectuslabs/kafka-ui:latest
+    image: provectuslabs/kafka-ui:master
     restart_policy: always
     state: started
     user: root
