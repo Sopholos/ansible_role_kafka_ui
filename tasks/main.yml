@@ -1,0 +1,8 @@
+---
+- name: install | via guthub asset
+  include_tasks: github_assets.yml
+  when: not docker_image_deploy 
+
+- name: install | via docker image
+  include_tasks: docker_image.yml
+  when: docker_image_deploy

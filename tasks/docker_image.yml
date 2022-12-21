@@ -1,0 +1,33 @@
+---
+- name: install | set_fact kafkaui_config_path
+  set_fact:
+    kafkaui_config_path: "{{ kafkaui_config_path }}"
+    kafkaui_container_config_path: "/home/kafkaui/config/application-local.yml"
+  vars:
+    kafkaui_config_path: "/etc/kafkaui/{{ docker_container_name }}/application-local.yml"
+
+- name: install | make sure destination config dir exists
+  file:
+    path: "{{ kafkaui_config_path | dirname }}"
+    mode: 755
+    state: directory  
+
+- name: install | template configuration file to application-local.yml
+  template:
+    src: application-local.yml.j2
+    dest: "{{ kafkaui_config_path }}"
+    mode: 755
+
+- name: install | deploy provectuslabs/kafka-ui:latest docker container
+  docker_container:
+    name: "{{ docker_container_name }}"
+    image: provectuslabs/kafka-ui:latest
+    restart_policy: always
+    state: started
+    user: root
+    ports:
+      - "{{ kafkaui_port }}:{{ kafkaui_port }}"
+    env:
+      JAVA_OPTS: "-Dspring.config.additional-location={{ kafkaui_container_config_path }}"
+    volumes:
+      - "{{ kafkaui_config_path | dirname }}:{{ kafkaui_container_config_path | dirname }}:ro"

@@ -1,4 +1,5 @@
 ---
+docker_image_deploy: false
 # The Kafka-UI version to be downloaded and installed
 kafkaui_download_base_url: https://github.com/provectus/kafka-ui/releases/download/
 kafkaui_download_validate_certs: yes
