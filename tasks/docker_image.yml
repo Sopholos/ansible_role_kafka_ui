@@ -10,13 +10,14 @@
   file:
     path: "{{ kafkaui_config_path | dirname }}"
     mode: 755
-    state: directory  
+    state: directory
 
 - name: install | template configuration file to application-local.yml
   template:
     src: application-local.yml.j2
     dest: "{{ kafkaui_config_path }}"
     mode: 755
+  register: kafkaui_config
 
 - name: install | deploy provectuslabs/kafka-ui:latest docker container
   docker_container:
@@ -31,3 +32,11 @@
       JAVA_OPTS: "-Dspring.config.additional-location={{ kafkaui_container_config_path }}"
     volumes:
       - "{{ kafkaui_config_path | dirname }}:{{ kafkaui_container_config_path | dirname }}:ro"
+
+- name: install | restart on config change
+  docker_container:
+    name: "{{ docker_container_name }}"
+    state: started
+    restart: true
+  when: kafkaui_config is defined and kafkaui_config.changed
+
