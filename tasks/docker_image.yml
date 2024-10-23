@@ -22,7 +22,8 @@
 - name: install | deploy provectuslabs/kafka-ui:master docker container
   docker_container:
     name: "{{ docker_container_name }}"
-    image: provectuslabs/kafka-ui:master
+    pull: true
+    image: provectuslabs/kafka-ui:latest
     restart_policy: always
     state: started
     user: root
